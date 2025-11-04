@@ -1402,24 +1402,35 @@
       };
     }
 
-    // Mettre en évidence les symboles identiques
-    function highlightMatchingSymbols(matchingInfo) {
-      const { count, positions } = matchingInfo;
+    // Mettre en évidence les symboles identiques - MODIFIÉ POUR TOUTES LES COMBINAISONS DE 3+
+    function highlightMatchingSymbols() {
+      const symbolGroups = {};
+      
+      // Grouper les symboles par type
+      symbols.forEach((symbolIndex, position) => {
+        const symbolType = symbolIndex;
+        if (!symbolGroups[symbolType]) {
+          symbolGroups[symbolType] = [];
+        }
+        symbolGroups[symbolType].push(position);
+      });
       
       // Supprimer d'abord toutes les classes de victoire partielles
       document.querySelectorAll('.symbol-wheel').forEach(symbol => {
         symbol.classList.remove('partial-win');
       });
       
-      // Appliquer la classe partial-win aux symboles identiques
-      if (count >= 3) {
-        positions.forEach(position => {
-          const symbolElement = document.getElementById(`symbol${position + 1}`);
-          if (symbolElement) {
-            symbolElement.classList.add('partial-win');
-          }
-        });
-      }
+      // Appliquer la classe partial-win à TOUS les groupes de 3 symboles ou plus
+      Object.values(symbolGroups).forEach(positions => {
+        if (positions.length >= 3) {
+          positions.forEach(position => {
+            const symbolElement = document.getElementById(`symbol${position + 1}`);
+            if (symbolElement) {
+              symbolElement.classList.add('partial-win');
+            }
+          });
+        }
+      });
     }
 
     // Gérer le bonus de roses
@@ -1580,10 +1591,11 @@
           await winGame();
           break;
         } else {
-          // Vérifier s'il y a des symboles identiques (3, 4, 5 ou 6)
+          // Vérifier s'il y a des symboles identiques (3, 4, 5 ou 6) - MODIFIÉ
           const matchingInfo = countMatchingSymbols();
           if (matchingInfo.count >= 3) {
-            highlightMatchingSymbols(matchingInfo);
+            // Mettre en évidence TOUS les groupes de 3 symboles ou plus
+            highlightMatchingSymbols();
             message.textContent = `🎉 ${matchingInfo.count} symboles ${matchingInfo.symbol} identiques ! 🎉`;
             playSymbolSound();
             
