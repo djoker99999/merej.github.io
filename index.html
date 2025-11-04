@@ -149,8 +149,20 @@
 
     .symbol-wheel.winning {
       animation: winPulse 0.5s ease-in-out 3;
-      background: linear-gradient(145deg, #27ae60, #2ecc71);
+      background: linear-gradient(145deg, #ffd700, #ffed4e);
       color: white;
+      border-color: #ffd700;
+    }
+
+    .symbol-wheel.partial-win {
+      background: linear-gradient(145deg, #ffd700, #ffed4e);
+      border-color: #ffd700;
+      animation: partialWinPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes partialWinPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
 
     @keyframes winPulse {
@@ -565,18 +577,6 @@
     .symbol-9 { border-color: #16a085; }
     .symbol-10 { border-color: #2980b9; }
     .symbol-11 { border-color: #c0392b; }
-
-    .symbol-1.winning { background: linear-gradient(145deg, #8e44ad, #9b59b6); }
-    .symbol-2.winning { background: linear-gradient(145deg, #c0392b, #e74c3c); }
-    .symbol-3.winning { background: linear-gradient(145deg, #e67e22, #f39c12); }
-    .symbol-4.winning { background: linear-gradient(145deg, #2c3e50, #34495e); }
-    .symbol-5.winning { background: linear-gradient(145deg, #636e72, #7f8c8d); }
-    .symbol-6.winning { background: linear-gradient(145deg, #27ae60, #2ecc71); }
-    .symbol-7.winning { background: linear-gradient(145deg, #8e44ad, #9b59b6); }
-    .symbol-8.winning { background: linear-gradient(145deg, #e67e22, #f39c12); }
-    .symbol-9.winning { background: linear-gradient(145deg, #16a085, #1abc9c); }
-    .symbol-10.winning { background: linear-gradient(145deg, #2980b9, #3498db); }
-    .symbol-11.winning { background: linear-gradient(145deg, #c0392b, #e74c3c); }
 
     .jackpot-hidden {
       opacity: 0.3;
@@ -1338,6 +1338,7 @@
     function removeWinClasses() {
       document.querySelectorAll('.symbol-wheel').forEach(symbol => {
         symbol.classList.remove('winning');
+        symbol.classList.remove('partial-win');
         symbol.classList.remove('spinning');
         symbol.classList.remove('fast-spin');
         
@@ -1365,15 +1366,60 @@
       return true;
     }
 
-    // Compter le nombre de symboles identiques
+    // Compter le nombre de symboles identiques et identifier les positions
     function countMatchingSymbols() {
       const symbolCounts = {};
-      symbols.forEach(symbolIndex => {
+      const symbolPositions = {};
+      
+      // Compter les occurrences de chaque symbole
+      symbols.forEach((symbolIndex, position) => {
         const symbolName = symbolTypes[symbolIndex].name;
         symbolCounts[symbolName] = (symbolCounts[symbolName] || 0) + 1;
+        
+        if (!symbolPositions[symbolName]) {
+          symbolPositions[symbolName] = [];
+        }
+        symbolPositions[symbolName].push(position);
       });
       
-      return Math.max(...Object.values(symbolCounts));
+      // Trouver le symbole avec le plus d'occurrences
+      let maxCount = 0;
+      let maxSymbol = null;
+      let maxPositions = [];
+      
+      for (const [symbolName, count] of Object.entries(symbolCounts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          maxSymbol = symbolName;
+          maxPositions = symbolPositions[symbolName];
+        }
+      }
+      
+      return {
+        count: maxCount,
+        symbol: maxSymbol,
+        positions: maxPositions
+      };
+    }
+
+    // Mettre en évidence les symboles identiques
+    function highlightMatchingSymbols(matchingInfo) {
+      const { count, positions } = matchingInfo;
+      
+      // Supprimer d'abord toutes les classes de victoire partielles
+      document.querySelectorAll('.symbol-wheel').forEach(symbol => {
+        symbol.classList.remove('partial-win');
+      });
+      
+      // Appliquer la classe partial-win aux symboles identiques
+      if (count >= 3) {
+        positions.forEach(position => {
+          const symbolElement = document.getElementById(`symbol${position + 1}`);
+          if (symbolElement) {
+            symbolElement.classList.add('partial-win');
+          }
+        });
+      }
     }
 
     // Gérer le bonus de roses
@@ -1391,30 +1437,37 @@
       }
     }
 
-    // Animation de rotation d'un symbole
-    function spinSymbol(index) {
+    // Animation de rotation de tous les symboles simultanément
+    function spinAllSymbolsSimultaneously() {
       return new Promise(resolve => {
-        const symbolElement = document.getElementById(`symbol${index + 1}`);
-        if (!symbolElement) return resolve();
-        
-        if (isFastMode) {
-          symbolElement.classList.add('spinning', 'fast-spin');
-        } else {
-          symbolElement.classList.add('spinning');
-        }
+        // Activer l'animation de rotation sur tous les symboles
+        document.querySelectorAll('.symbol-wheel').forEach(symbolElement => {
+          if (isFastMode) {
+            symbolElement.classList.add('spinning', 'fast-spin');
+          } else {
+            symbolElement.classList.add('spinning');
+          }
+        });
         
         let spins = 0;
         const maxSpins = isFastMode ? 5 + Math.floor(Math.random() * 5) : 10 + Math.floor(Math.random() * 10);
         const spinInterval = isFastMode ? 30 : 100;
         
         const spinIntervalId = setInterval(() => {
-          symbols[index] = getRandomSymbol();
-          updateSingleSymbol(index);
+          // Changer tous les symboles en même temps
+          for (let i = 0; i < symbols.length; i++) {
+            symbols[i] = getRandomSymbol();
+            updateSingleSymbol(i);
+          }
+          
           spins++;
           
           if (spins >= maxSpins) {
             clearInterval(spinIntervalId);
-            symbolElement.classList.remove('spinning', 'fast-spin');
+            // Arrêter l'animation de rotation sur tous les symboles
+            document.querySelectorAll('.symbol-wheel').forEach(symbolElement => {
+              symbolElement.classList.remove('spinning', 'fast-spin');
+            });
             setTimeout(resolve, isFastMode ? 20 : 100);
           }
         }, spinInterval);
@@ -1504,24 +1557,8 @@
       updateRemainingTurns();
       
       for (let coup = 0; coup < attackMode; coup++) {
-        let canWin = true;
-        let firstSymbol = null;
-        
-        // Faire tourner les symboles un par un et s'arrêter dès qu'il n'y a plus de chance
-        for (let i = 0; i < currentDifficulty && canWin; i++) {
-          await spinSymbol(i);
-          
-          if (i === 0) {
-            // Premier symbole : on garde sa valeur comme référence
-            firstSymbol = symbols[0];
-          } else {
-            // Symboles suivants : vérifier s'ils sont identiques au premier
-            if (symbols[i] !== firstSymbol) {
-              canWin = false;
-              message.textContent = `Pas de chance... Symbole ${i + 1} différent !`;
-            }
-          }
-        }
+        // Faire tourner tous les symboles en même temps
+        await spinAllSymbolsSimultaneously();
         
         attempts++;
         currentGameAttempts++;
@@ -1534,19 +1571,35 @@
         handleRoseBonus();
         updateStats();
         
-        // CORRECTION : Le son ne se joue que si TOUS les symboles sont identiques (victoire)
-        if (canWin && checkWin()) {
+        // Vérifier la victoire
+        if (checkWin()) {
           playSymbolSound(); // Son joué uniquement lors d'une victoire
           await winGame();
           break;
-        } else if (coup < attackMode - 1) {
+        } else {
+          // Vérifier s'il y a des symboles identiques (3, 4, 5 ou 6)
+          const matchingInfo = countMatchingSymbols();
+          if (matchingInfo.count >= 3) {
+            highlightMatchingSymbols(matchingInfo);
+            message.textContent = `🎉 ${matchingInfo.count} symboles ${matchingInfo.symbol} identiques ! 🎉`;
+            playSymbolSound();
+          }
+        }
+        
+        if (coup < attackMode - 1) {
           await new Promise(resolve => setTimeout(resolve, isFastMode ? 100 : 300));
         }
       }
       
       if (!checkWin()) {
-        const maxCount = countMatchingSymbols();
-        message.textContent = `Maximum ${maxCount} symboles identiques - Jackpot: ${jackpotAmount} roses`;
+        const matchingInfo = countMatchingSymbols();
+        const maxCount = matchingInfo.count;
+        
+        if (maxCount >= 3) {
+          message.textContent = `Maximum ${maxCount} symboles ${matchingInfo.symbol} identiques - Jackpot: ${jackpotAmount} roses`;
+        } else {
+          message.textContent = `Maximum ${maxCount} symboles identiques - Jackpot: ${jackpotAmount} roses`;
+        }
       }
       
       isSpinning = false;
