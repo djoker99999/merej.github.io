@@ -1549,6 +1549,9 @@
       spinBtn.disabled = true;
       message.textContent = "Les rouleaux tournent...";
       
+      // Supprimer les classes de victoire partielles avant de commencer
+      removeWinClasses();
+      
       // Jouer le son de rotation
       playSpinSound();
       
@@ -1583,6 +1586,12 @@
             highlightMatchingSymbols(matchingInfo);
             message.textContent = `🎉 ${matchingInfo.count} symboles ${matchingInfo.symbol} identiques ! 🎉`;
             playSymbolSound();
+            
+            // Attendre un peu pour que le joueur puisse voir les symboles dorés
+            await new Promise(resolve => setTimeout(resolve, isFastMode ? 500 : 1000));
+            
+            // Supprimer les classes de victoire partielles pour le prochain tour
+            removeWinClasses();
           }
         }
         
