@@ -544,7 +544,7 @@
       display: none;
     }
 
-    /* INDICATEUR DE SAUVEGARDE */
+    /* Indicateur de sauvegarde */
     .save-indicator {
       position: fixed;
       top: 20px;
@@ -565,7 +565,7 @@
       opacity: 1;
     }
 
-    /* COULEURS POUR CHAQUE SYMBOLE */
+    /* Couleurs pour chaque symbole */
     .symbol-1 { border-color: #9b59b6; }
     .symbol-2 { border-color: #e74c3c; }
     .symbol-3 { border-color: #f39c12; }
@@ -588,7 +588,7 @@
       filter: none;
     }
 
-    /* NOUVEAU : COMPTEUR DE TOURS RESTANTS */
+    /* Nouveau : Compteur de tours restants */
     .remaining-turns {
       background: linear-gradient(45deg, #3498db, #2980b9);
       padding: 10px;
@@ -628,7 +628,7 @@
       transition: width 0.5s ease;
     }
 
-    /* ANIMATIONS DE RÉCOMPENSE */
+    /* Animations de récompense */
     .reward-animation {
       position: fixed;
       top: 0;
@@ -758,6 +758,125 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
 
+    /* NOUVEAU : Système de Drop */
+    .drop-pool-display {
+      background: linear-gradient(45deg, #f39c12, #e67e22);
+      padding: 10px;
+      border-radius: 10px;
+      margin: 10px 0;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .drop-pool-label {
+      font-size: 0.9em;
+      margin-bottom: 5px;
+      color: white;
+    }
+
+    .drop-pool-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #feca57;
+    }
+
+    .drop-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.85);
+      animation: dropFadeIn 0.5s ease;
+    }
+
+    @keyframes dropFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .drop-popup {
+      background: linear-gradient(135deg, #f39c12, #e67e22, #f39c12);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 500px;
+      animation: dropScaleIn 0.6s ease;
+      border: 4px solid #feca57;
+      box-shadow: 0 0 40px rgba(243, 156, 18, 0.8);
+      position: relative;
+      overflow: hidden;
+      z-index: 10000;
+    }
+
+    @keyframes dropScaleIn {
+      from { 
+        transform: scale(0.2) rotate(-5deg);
+        opacity: 0;
+      }
+      to { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    .drop-popup-icon {
+      font-size: 6em;
+      margin-bottom: 15px;
+      animation: dropBounce 0.8s infinite;
+      filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+    }
+
+    @keyframes dropBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.1); }
+    }
+
+    .drop-popup-title {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      color: white;
+      text-shadow: 0 0 15px rgba(0,0,0,0.8);
+      background: linear-gradient(45deg, #f39c12, #e67e22);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .drop-popup-description {
+      font-size: 1.3em;
+      margin-bottom: 20px;
+      color: white;
+      font-weight: bold;
+      text-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+
+    .drop-close {
+      padding: 12px 25px;
+      background: linear-gradient(45deg, #f39c12, #e67e22);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      z-index: 10001;
+    }
+
+    .drop-close:hover {
+      background: linear-gradient(45deg, #e67e22, #f39c12);
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+
     @media (max-width: 768px) {
       .game-container {
         padding: 20px;
@@ -831,14 +950,21 @@
   <div class="game-container">
     <h1>🎰 Jackpot des Symboles Mystères</h1>
     
-    <!-- COMPTEUR DE ROSES JACKPOT -->
+    <!-- Compteur de roses jackpot -->
     <div class="jackpot-display" id="jackpotDisplay">
       <div class="jackpot-label">JACKPOT ACTUEL</div>
       <div class="jackpot-amount" id="jackpotAmount">250 🌹</div>
       <div class="jackpot-info" id="jackpotInfo">Jackpot visible à partir de 1000 roses</div>
     </div>
 
-    <!-- NOUVEAU : COMPTEUR DE TOURS RESTANTS -->
+    <!-- NOUVEAU : Affichage du pool de drop -->
+    <div class="drop-pool-display" id="dropPoolDisplay">
+      <div class="drop-pool-label">POOL DE DROP</div>
+      <div class="drop-pool-value" id="dropPoolValue">0 pièces</div>
+      <div class="drop-pool-info" id="dropPoolInfo">Chance de 1/500 de gagner des pièces</div>
+    </div>
+
+    <!-- Compteur de tours restants -->
     <div class="remaining-turns" id="remainingTurns">
       <div class="remaining-turns-label">Tours restants</div>
       <div class="remaining-turns-value" id="remainingTurnsValue">0</div>
@@ -889,13 +1015,13 @@
       </div>
     </div>
 
-    <!-- CONTROLES PRINCIPAUX -->
+    <!-- Contrôles principaux -->
     <div class="main-controls">
       <button id="spinBtn">Tourner les rouleaux</button>
       <button id="speedBtn">⏩ Accélérer</button>
     </div>
 
-    <!-- STATISTIQUES -->
+    <!-- Statistiques -->
     <div class="stats">
       <div class="stat-item">
         <div>Tours totaux</div>
@@ -915,7 +1041,7 @@
       </div>
     </div>
 
-    <!-- TABLEAU DES RÉCOMPENSES -->
+    <!-- Tableau des récompenses -->
     <div class="gains-history">
       <h3>🏆 Récompenses 🏆</h3>
       <div id="gainsTableContainer">
@@ -961,6 +1087,10 @@
     let gainsHistory = []; // Historique des gains
     let remainingTurns = 0; // Tours restants pour l'attaque en cours
 
+    // NOUVEAU : Variables pour le système de drop
+    let dropPool = 0; // Nombre de pièces dans le pool de drop
+    let dropCounter = 0; // Compteur pour ajouter des pièces au pool tous les 100 tours
+
     // Variables pour les sons
     let symbolSoundPlaying = false;
     let spinSoundPlaying = false;
@@ -969,7 +1099,7 @@
     const symbolSound = new Audio('https://files.catbox.moe/goq31j.mp3');
     const spinSound = new Audio('https://files.catbox.moe/0hvif7.mp3');
 
-    // SYSTÈME DE SAUVEGARDE
+    // Système de sauvegarde
     const SAVE_KEY = 'jackpotGameSave';
     let showSaveIndicator = true; // Pour éviter le spam de notifications
 
@@ -982,6 +1112,8 @@
         jackpotAmount: jackpotAmount,
         bonusCounter: bonusCounter,
         gainsHistory: gainsHistory,
+        dropPool: dropPool, // NOUVEAU : Sauvegarder le pool de drop
+        dropCounter: dropCounter, // NOUVEAU : Sauvegarder le compteur de drop
         lastSaved: new Date().toISOString()
       };
       
@@ -1017,6 +1149,8 @@
           jackpotAmount = data.jackpotAmount || 250;
           bonusCounter = data.bonusCounter || 0;
           gainsHistory = data.gainsHistory || [];
+          dropPool = data.dropPool || 0; // NOUVEAU : Charger le pool de drop
+          dropCounter = data.dropCounter || 0; // NOUVEAU : Charger le compteur de drop
           
           console.log('Partie chargée depuis la sauvegarde');
           
@@ -1047,6 +1181,8 @@
         bonusCounter = 0;
         gainsHistory = [];
         remainingTurns = 0;
+        dropPool = 0; // NOUVEAU : Réinitialiser le pool de drop
+        dropCounter = 0; // NOUVEAU : Réinitialiser le compteur de drop
         
         // Réinitialiser l'affichage
         symbols = Array(currentDifficulty).fill(0).map(() => getRandomSymbol());
@@ -1054,6 +1190,7 @@
         updateStats();
         updateGainsTable();
         updateJackpotDisplay();
+        updateDropPoolDisplay(); // NOUVEAU : Mettre à jour l'affichage du pool
         updateRemainingTurns();
         removeWinClasses();
         
@@ -1173,6 +1310,10 @@
     const gainsTableContainer = document.getElementById('gainsTableContainer');
     const remainingTurnsValue = document.getElementById('remainingTurnsValue');
     const remainingTurnsProgress = document.getElementById('remainingTurnsProgress');
+    
+    // NOUVEAU : Éléments DOM pour le système de drop
+    const dropPoolValue = document.getElementById('dropPoolValue');
+    const dropPoolInfo = document.getElementById('dropPoolInfo');
 
     // Fonction pour jouer le son des symboles
     function playSymbolSound() {
@@ -1205,6 +1346,7 @@
       // Ne PAS réinitialiser attempts (compteur total)
       // Ne PAS réinitialiser rosesCount (roses totales)
       // Ne PAS réinitialiser gainsHistory (historique)
+      // Ne PAS réinitialiser dropPool (pool de drop)
       
       currentGameAttempts = 0; // Réinitialiser seulement le compteur de la partie en cours
       jackpotAmount = 250; // Toujours commencer à 250
@@ -1230,6 +1372,17 @@
       
       // Sauvegarder après chaque mise à jour (sans notification)
       saveGame(false);
+    }
+
+    // NOUVEAU : Mettre à jour l'affichage du pool de drop
+    function updateDropPoolDisplay() {
+      dropPoolValue.textContent = `${dropPool} pièces`;
+      
+      if (dropPool > 0) {
+        dropPoolInfo.textContent = `Chance de 1/500 de gagner ${dropPool} pièces`;
+      } else {
+        dropPoolInfo.textContent = `Chance de 1/500 de gagner des pièces`;
+      }
     }
 
     // Mettre à jour l'affichage du compteur de tours restants
@@ -1448,6 +1601,69 @@
       }
     }
 
+    // NOUVEAU : Gérer le système de drop
+    function handleDropSystem() {
+      // Incrémenter le compteur de drop
+      dropCounter++;
+      
+      // Ajouter 10 pièces au pool tous les 100 tours
+      if (dropCounter % 100 === 0) {
+        dropPool += 10;
+        message.textContent = `💰 +10 pièces ajoutées au pool de drop ! Pool actuel: ${dropPool} pièces`;
+        updateDropPoolDisplay();
+      }
+      
+      // Chance de 1 sur 500 de gagner les pièces du pool
+      if (dropPool > 0 && Math.random() < 1/500) {
+        const coinsWon = dropPool;
+        rosesCount += coinsWon;
+        jackpotAmount += coinsWon;
+        
+        // Afficher l'animation de drop
+        showDropAnimation(coinsWon);
+        
+        // Réinitialiser le pool
+        dropPool = 0;
+        updateDropPoolDisplay();
+        updateStats();
+        updateJackpotDisplay();
+        
+        return true;
+      }
+      
+      return false;
+    }
+
+    // NOUVEAU : Afficher l'animation de drop
+    function showDropAnimation(coinsWon) {
+      const dropAnimation = document.createElement('div');
+      dropAnimation.className = 'drop-animation';
+      
+      dropAnimation.innerHTML = `
+        <div class="drop-popup">
+          <div class="drop-popup-icon">
+            <img src="https://i.ibb.co/7JsBRrCn/IMG-5885.png" alt="Pièces" style="width: 80px; height: 80px;">
+          </div>
+          <div class="drop-popup-title">DROP GAGNÉ !</div>
+          <div class="drop-popup-description">Vous avez remporté ${coinsWon} pièces du pool de drop !</div>
+          <button class="drop-close">CONTINUER</button>
+        </div>
+      `;
+      
+      document.body.appendChild(dropAnimation);
+      
+      const closeButton = dropAnimation.querySelector('.drop-close');
+      closeButton.addEventListener('click', () => {
+        document.body.removeChild(dropAnimation);
+      });
+      
+      setTimeout(() => {
+        if (document.body.contains(dropAnimation)) {
+          document.body.removeChild(dropAnimation);
+        }
+      }, 5000);
+    }
+
     // Animation de rotation de tous les symboles simultanément
     function spinAllSymbolsSimultaneously() {
       return new Promise(resolve => {
@@ -1583,6 +1799,10 @@
         
         // Gérer le bonus de roses
         handleRoseBonus();
+        
+        // NOUVEAU : Gérer le système de drop
+        const dropWon = handleDropSystem();
+        
         updateStats();
         
         // Vérifier la victoire
@@ -1593,7 +1813,7 @@
         } else {
           // Vérifier s'il y a des symboles identiques (3, 4, 5 ou 6) - MODIFIÉ
           const matchingInfo = countMatchingSymbols();
-          if (matchingInfo.count >= 3) {
+          if (matchingInfo.count >= 3 && !dropWon) {
             // Mettre en évidence TOUS les groupes de 3 symboles ou plus
             highlightMatchingSymbols();
             message.textContent = `🎉 ${matchingInfo.count} symboles ${matchingInfo.symbol} identiques ! 🎉`;
@@ -1737,6 +1957,7 @@
       updateStats();
       updateGainsTable();
       updateJackpotDisplay();
+      updateDropPoolDisplay(); // NOUVEAU : Mettre à jour l'affichage du pool
       updateRemainingTurns();
       removeWinClasses();
       
