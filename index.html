@@ -452,6 +452,12 @@
       font-size: 1.1em;
     }
 
+    .gains-table .drop-amount {
+      color: #f39c12;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
     .no-gains {
       text-align: center;
       color: rgba(255, 255, 255, 0.6);
@@ -1560,7 +1566,7 @@
               <th>N°</th>
               <th>Date</th>
               <th>Tours</th>
-              <th>Symbole</th>
+              <th>Type</th>
               <th>Gain</th>
             </tr>
           </thead>
@@ -1572,13 +1578,18 @@
       recentGains.forEach((gain, index) => {
         const gainNumber = gainsHistory.length - index;
         const dateDisplay = gain.date ? gain.date.split(' ')[0] : '-';
+        const gainType = gain.type === 'drop' ? 'DROP' : gain.symbole || '-';
+        const gainAmount = gain.type === 'drop' 
+          ? `<span class="drop-amount">${gain.amount} pièces</span>` 
+          : `<span class="gain-amount">${gain.roses} 🌹</span>`;
+          
         tableHTML += `
           <tr>
             <td>#${gainNumber}</td>
             <td style="font-size: 0.85em;">${dateDisplay}</td>
             <td>${gain.tours}</td>
-            <td>${gain.symbole}</td>
-            <td class="gain-amount">${gain.roses} 🌹</td>
+            <td>${gainType}</td>
+            <td>${gainAmount}</td>
           </tr>
         `;
       });
@@ -1587,7 +1598,7 @@
       
       if (gainsHistory.length > 10) {
         tableHTML += `<div style="text-align: center; color: #feca57; margin-top: 10px; font-size: 0.9em;">
-          Affichage des 10 derniers jackpots (${gainsHistory.length} au total)
+          Affichage des 10 derniers gains (${gainsHistory.length} au total)
         </div>`;
       }
       
@@ -1750,6 +1761,17 @@
         const coinsWon = dropPool;
         rosesCount += coinsWon;
         jackpotAmount += coinsWon;
+        
+        // Ajouter le drop à l'historique des gains
+        gainsHistory.push({
+          type: 'drop',
+          tours: currentGameAttempts,
+          amount: coinsWon,
+          date: new Date().toLocaleString('fr-FR')
+        });
+        
+        // Mettre à jour le tableau des gains
+        updateGainsTable();
         
         // Afficher l'animation de drop
         showDropAnimation(coinsWon);
@@ -2099,6 +2121,7 @@
       
       // Ajouter le gain à l'historique
       gainsHistory.push({
+        type: 'jackpot',
         tours: currentGameAttempts,
         symbole: winningSymbol.name,
         roses: jackpotAmount,
