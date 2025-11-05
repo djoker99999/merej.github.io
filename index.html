@@ -877,6 +877,100 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
 
+    /* NOUVEAU : Boutons de contrôle supplémentaires */
+    .extra-controls {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .extra-controls button {
+      padding: 10px 15px;
+      font-size: 14px;
+      background: linear-gradient(45deg, #9b59b6, #8e44ad);
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .extra-controls button:hover {
+      background: linear-gradient(45deg, #8e44ad, #9b59b6);
+    }
+
+    .extra-controls button.active {
+      background: linear-gradient(45deg, #e74c3c, #c0392b);
+      animation: pulseSpeed 1s infinite;
+    }
+
+    .light-speed-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .light-speed-controls button {
+      padding: 10px 15px;
+      font-size: 14px;
+      background: linear-gradient(45deg, #3498db, #2980b9);
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .light-speed-controls button:hover {
+      background: linear-gradient(45deg, #2980b9, #3498db);
+    }
+
+    .light-speed-controls button.active {
+      background: linear-gradient(45deg, #f39c12, #e67e22);
+      animation: pulseSpeed 1s infinite;
+    }
+
+    .jackpot-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .jackpot-controls button {
+      padding: 10px 15px;
+      font-size: 14px;
+      background: linear-gradient(45deg, #e74c3c, #c0392b);
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .jackpot-controls button:hover {
+      background: linear-gradient(45deg, #c0392b, #e74c3c);
+    }
+
+    .jackpot-controls button.active {
+      background: linear-gradient(45deg, #f39c12, #e67e22);
+      animation: pulseSpeed 1s infinite;
+    }
+
     @media (max-width: 768px) {
       .game-container {
         padding: 20px;
@@ -917,6 +1011,13 @@
         flex-direction: column;
         align-items: center;
       }
+
+      .extra-controls, .light-speed-controls, .jackpot-controls {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        margin: 10px 0;
+      }
     }
 
     @media (max-width: 480px) {
@@ -947,6 +1048,23 @@
   </style>
 </head>
 <body>
+  <!-- NOUVEAU : Contrôles supplémentaires hors de la zone de jeu -->
+  <div class="extra-controls">
+    <button id="superSpeedBtn">⚡ Super Vitesse</button>
+    <button id="ultraSpeedBtn">🚀 Ultra Vitesse</button>
+  </div>
+
+  <div class="light-speed-controls">
+    <button id="slowLightsBtn">🐢 Lumières Lentes</button>
+    <button id="fastLightsBtn">⚡ Lumières Rapides</button>
+  </div>
+
+  <div class="jackpot-controls">
+    <button id="increaseJackpotBtn">➕ Augmenter Jackpot</button>
+    <button id="decreaseJackpotBtn">➖ Diminuer Jackpot</button>
+    <button id="setJackpotBtn">🎯 Définir Jackpot</button>
+  </div>
+
   <div class="game-container">
     <h1>🎰 Jackpot des Symboles Mystères</h1>
     
@@ -1090,6 +1208,11 @@
     // NOUVEAU : Variables pour le système de drop
     let dropPool = 0; // Nombre de pièces dans le pool de drop
     let dropCounter = 0; // Compteur pour ajouter des pièces au pool tous les 100 tours
+
+    // NOUVEAU : Variables pour les vitesses supplémentaires
+    let isSuperSpeedMode = false;
+    let isUltraSpeedMode = false;
+    let lightSpeed = 3; // Vitesse par défaut pour les lumières (3s)
 
     // Variables pour les sons
     let symbolSoundPlaying = false;
@@ -1314,6 +1437,15 @@
     // NOUVEAU : Éléments DOM pour le système de drop
     const dropPoolValue = document.getElementById('dropPoolValue');
     const dropPoolInfo = document.getElementById('dropPoolInfo');
+    
+    // NOUVEAU : Éléments DOM pour les boutons supplémentaires
+    const superSpeedBtn = document.getElementById('superSpeedBtn');
+    const ultraSpeedBtn = document.getElementById('ultraSpeedBtn');
+    const slowLightsBtn = document.getElementById('slowLightsBtn');
+    const fastLightsBtn = document.getElementById('fastLightsBtn');
+    const increaseJackpotBtn = document.getElementById('increaseJackpotBtn');
+    const decreaseJackpotBtn = document.getElementById('decreaseJackpotBtn');
+    const setJackpotBtn = document.getElementById('setJackpotBtn');
 
     // Fonction pour jouer le son des symboles
     function playSymbolSound() {
@@ -1669,16 +1801,32 @@
       return new Promise(resolve => {
         // Activer l'animation de rotation sur tous les symboles
         document.querySelectorAll('.symbol-wheel').forEach(symbolElement => {
-          if (isFastMode) {
+          if (isUltraSpeedMode) {
             symbolElement.classList.add('spinning', 'fast-spin');
+          } else if (isSuperSpeedMode || isFastMode) {
+            symbolElement.classList.add('spinning');
           } else {
             symbolElement.classList.add('spinning');
           }
         });
         
         let spins = 0;
-        const maxSpins = isFastMode ? 5 + Math.floor(Math.random() * 5) : 10 + Math.floor(Math.random() * 10);
-        const spinInterval = isFastMode ? 30 : 100;
+        let maxSpins, spinInterval;
+        
+        // Déterminer la vitesse en fonction du mode
+        if (isUltraSpeedMode) {
+          maxSpins = 3 + Math.floor(Math.random() * 3);
+          spinInterval = 10;
+        } else if (isSuperSpeedMode) {
+          maxSpins = 5 + Math.floor(Math.random() * 5);
+          spinInterval = 20;
+        } else if (isFastMode) {
+          maxSpins = 5 + Math.floor(Math.random() * 5);
+          spinInterval = 30;
+        } else {
+          maxSpins = 10 + Math.floor(Math.random() * 10);
+          spinInterval = 100;
+        }
         
         const spinIntervalId = setInterval(() => {
           // Changer tous les symboles en même temps
@@ -1695,7 +1843,14 @@
             document.querySelectorAll('.symbol-wheel').forEach(symbolElement => {
               symbolElement.classList.remove('spinning', 'fast-spin');
             });
-            setTimeout(resolve, isFastMode ? 20 : 100);
+            
+            let delay;
+            if (isUltraSpeedMode) delay = 10;
+            else if (isSuperSpeedMode) delay = 15;
+            else if (isFastMode) delay = 20;
+            else delay = 100;
+            
+            setTimeout(resolve, delay);
           }
         }, spinInterval);
       });
@@ -1735,6 +1890,83 @@
         speedBtn.innerHTML = '⏩ Accélérer';
         speedIndicator.style.display = 'none';
         message.textContent = 'Mode normal activé';
+      }
+    }
+
+    // NOUVEAU : Activer/désactiver le mode super vitesse
+    function toggleSuperSpeedMode() {
+      isSuperSpeedMode = !isSuperSpeedMode;
+      
+      if (isSuperSpeedMode) {
+        superSpeedBtn.classList.add('active');
+        isFastMode = false;
+        speedBtn.classList.remove('active');
+        speedBtn.innerHTML = '⏩ Accélérer';
+        speedIndicator.style.display = 'none';
+        message.textContent = 'Mode super vitesse activé !';
+      } else {
+        superSpeedBtn.classList.remove('active');
+        message.textContent = 'Mode normal activé';
+      }
+    }
+
+    // NOUVEAU : Activer/désactiver le mode ultra vitesse
+    function toggleUltraSpeedMode() {
+      isUltraSpeedMode = !isUltraSpeedMode;
+      
+      if (isUltraSpeedMode) {
+        ultraSpeedBtn.classList.add('active');
+        isFastMode = false;
+        isSuperSpeedMode = false;
+        superSpeedBtn.classList.remove('active');
+        speedBtn.classList.remove('active');
+        speedBtn.innerHTML = '⏩ Accélérer';
+        speedIndicator.style.display = 'none';
+        message.textContent = 'Mode ultra vitesse activé !';
+      } else {
+        ultraSpeedBtn.classList.remove('active');
+        message.textContent = 'Mode normal activé';
+      }
+    }
+
+    // NOUVEAU : Modifier la vitesse des lumières
+    function setLightSpeed(speed) {
+      lightSpeed = speed;
+      
+      // Mettre à jour l'animation de la bordure
+      const gameContainer = document.querySelector('.game-container');
+      gameContainer.style.animationDuration = `${lightSpeed}s`;
+      
+      // Mettre à jour l'état des boutons
+      if (speed === 5) {
+        slowLightsBtn.classList.add('active');
+        fastLightsBtn.classList.remove('active');
+        message.textContent = 'Vitesse des lumières réglée sur lent';
+      } else {
+        slowLightsBtn.classList.remove('active');
+        fastLightsBtn.classList.add('active');
+        message.textContent = 'Vitesse des lumières réglée sur rapide';
+      }
+    }
+
+    // NOUVEAU : Modifier le jackpot
+    function modifyJackpot(amount) {
+      jackpotAmount = amount;
+      updateJackpotDisplay();
+      updateStats();
+      message.textContent = `Jackpot modifié à ${jackpotAmount} roses !`;
+    }
+
+    // NOUVEAU : Définir le jackpot manuellement
+    function setJackpotManually() {
+      const newAmount = prompt('Entrez le nouveau montant du jackpot :', jackpotAmount);
+      if (newAmount !== null) {
+        const amount = parseInt(newAmount);
+        if (!isNaN(amount) && amount >= 0) {
+          modifyJackpot(amount);
+        } else {
+          message.textContent = 'Veuillez entrer un nombre valide !';
+        }
       }
     }
 
@@ -1820,7 +2052,13 @@
             playSymbolSound();
             
             // Attendre un peu pour que le joueur puisse voir les symboles dorés
-            await new Promise(resolve => setTimeout(resolve, isFastMode ? 500 : 1000));
+            let delay;
+            if (isUltraSpeedMode) delay = 200;
+            else if (isSuperSpeedMode) delay = 300;
+            else if (isFastMode) delay = 500;
+            else delay = 1000;
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
             
             // Supprimer les classes de victoire partielles pour le prochain tour
             removeWinClasses();
@@ -1828,7 +2066,13 @@
         }
         
         if (coup < attackMode - 1) {
-          await new Promise(resolve => setTimeout(resolve, isFastMode ? 100 : 300));
+          let delay;
+          if (isUltraSpeedMode) delay = 50;
+          else if (isSuperSpeedMode) delay = 75;
+          else if (isFastMode) delay = 100;
+          else delay = 300;
+          
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
       
@@ -1911,6 +2155,15 @@
     speedBtn.addEventListener('click', toggleSpeedMode);
     resetBtn.addEventListener('click', initGame);
     clearBtn.addEventListener('click', clearSave);
+
+    // NOUVEAU : Événements pour les boutons supplémentaires
+    superSpeedBtn.addEventListener('click', toggleSuperSpeedMode);
+    ultraSpeedBtn.addEventListener('click', toggleUltraSpeedMode);
+    slowLightsBtn.addEventListener('click', () => setLightSpeed(5));
+    fastLightsBtn.addEventListener('click', () => setLightSpeed(1));
+    increaseJackpotBtn.addEventListener('click', () => modifyJackpot(jackpotAmount + 100));
+    decreaseJackpotBtn.addEventListener('click', () => modifyJackpot(Math.max(0, jackpotAmount - 100)));
+    setJackpotBtn.addEventListener('click', setJackpotManually);
 
     document.getElementById("mode1").addEventListener("click", () => setAttackMode(1));
     document.getElementById("mode10").addEventListener("click", () => setAttackMode(10));
