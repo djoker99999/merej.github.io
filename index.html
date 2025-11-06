@@ -582,6 +582,7 @@
     .symbol-8 { border-color: #d35400; }
     .symbol-9 { border-color: #16a085; }
     .symbol-10 { border-color: #2980b9; }
+    .symbol-11 { border-color: #f1c40f; }
 
     .jackpot-hidden {
       opacity: 0.3;
@@ -1271,6 +1272,8 @@
     <div class="controls">
       <button id="resetBtn">Réinitialiser Jackpot</button>
       <button id="clearBtn" style="background: linear-gradient(45deg, #e74c3c, #c0392b);">🗑️ Effacer données</button>
+      <!-- NOUVEAU : Bouton pour réinitialiser les récompenses -->
+      <button id="resetRewardsBtn" style="background: linear-gradient(45deg, #9b59b6, #8e44ad);">🔄 Réinitialiser Récompenses</button>
     </div>
 
     <div id="message">Prêt à jouer ? Alignez 6 symboles identiques pour remporter le jackpot !</div>
@@ -1429,6 +1432,28 @@
       }
     }
 
+    // NOUVEAU : Fonction pour réinitialiser les récompenses
+    function resetRewards() {
+      if (confirm('⚠️ ATTENTION ⚠️\n\nVoulez-vous vraiment réinitialiser TOUTES vos récompenses ?\n\nCela supprimera :\n• ' + gainsHistory.length + ' jackpots dans l\'historique\n• L\'historique complet des gains\n\nCette action est IRRÉVERSIBLE !')) {
+        gainsHistory = [];
+        
+        // Mettre à jour le tableau des gains
+        updateGainsTable();
+        
+        message.textContent = '🔄 Toutes les récompenses ont été réinitialisées !';
+        
+        // Animation de confirmation
+        const gameContainer = document.querySelector('.game-container');
+        gameContainer.style.animation = 'none';
+        setTimeout(() => {
+          gameContainer.style.animation = '';
+        }, 100);
+        
+        // Sauvegarder les changements
+        saveGame(true);
+      }
+    }
+
     // Sauvegarde automatique toutes les 10 secondes pendant le jeu
     setInterval(() => {
       if (!isSpinning && attempts > 0) {
@@ -1441,7 +1466,7 @@
       saveGame(false); // Sans notification car la page se ferme
     });
 
-    // Symboles disponibles avec le symbole 5 retiré
+    // Symboles disponibles avec le nouveau symbole ajouté
     const symbolTypes = [
       { 
         type: 'symbol1', 
@@ -1469,39 +1494,45 @@
       },
       { 
         type: 'symbol5', 
-        image: 'https://i.ibb.co/prk8cpBr/symbol6.png',
-        name: 'Symbole 6',
+        image: 'https://i.ibb.co/Xr6J8bfK/symbol5.png',
+        name: 'Symbole 5',
         colorClass: 'symbol-5'
       },
       { 
         type: 'symbol6', 
-        image: 'https://i.ibb.co/2fBDM0x/symbol7.png', 
-        name: 'Symbole 7',
+        image: 'https://i.ibb.co/prk8cpBr/symbol6.png',
+        name: 'Symbole 6',
         colorClass: 'symbol-6'
       },
       { 
         type: 'symbol7', 
-        image: 'https://i.ibb.co/gbnj5Qzw/symbol8.png', 
-        name: 'Symbole 8',
+        image: 'https://i.ibb.co/2fBDM0x/symbol7.png', 
+        name: 'Symbole 7',
         colorClass: 'symbol-7'
       },
       { 
         type: 'symbol8', 
-        image: 'https://i.ibb.co/DfDvmC8T/IMG-6585.png', 
-        name: 'Symbole 9',
+        image: 'https://i.ibb.co/gbnj5Qzw/symbol8.png', 
+        name: 'Symbole 8',
         colorClass: 'symbol-8'
       },
       { 
         type: 'symbol9', 
-        image: 'https://i.ibb.co/2YpQxB1Y/IMG-6620.png', 
-        name: 'Symbole 10',
+        image: 'https://i.ibb.co/DfDvmC8T/IMG-6585.png', 
+        name: 'Symbole 9',
         colorClass: 'symbol-9'
       },
       { 
         type: 'symbol10', 
+        image: 'https://i.ibb.co/2YpQxB1Y/IMG-6620.png', 
+        name: 'Symbole 10',
+        colorClass: 'symbol-10'
+      },
+      { 
+        type: 'symbol11', 
         image: 'https://i.ibb.co/0pM1D3wm/IMG-7123.png', 
         name: 'Symbole 11',
-        colorClass: 'symbol-10'
+        colorClass: 'symbol-11'
       }
     ];
 
@@ -1511,6 +1542,7 @@
     const speedBtn = document.getElementById('speedBtn');
     const resetBtn = document.getElementById('resetBtn');
     const clearBtn = document.getElementById('clearBtn');
+    const resetRewardsBtn = document.getElementById('resetRewardsBtn'); // NOUVEAU : Bouton de réinitialisation des récompenses
     const message = document.getElementById('message');
     const resultContainer = document.getElementById('resultContainer');
     const attemptsCount = document.getElementById('attemptsCount');
@@ -2283,8 +2315,8 @@
     // CORRECTION : Calculer le gain partiel pour 4 ou 5 symboles
     function calculatePartialGain(symbolCount) {
       switch(symbolCount) {
-        case 4: return 50; // 50 roses pour 4 symboles
-        case 5: return 100; // 100 roses pour 5 symboles
+        case 4: return 10; // 10 roses pour 4 symboles
+        case 5: return 50; // 50 roses pour 5 symboles
         default: return 0;
       }
     }
@@ -2354,6 +2386,7 @@
     speedBtn.addEventListener('click', toggleSpeedMode);
     resetBtn.addEventListener('click', initGame);
     clearBtn.addEventListener('click', clearSave);
+    resetRewardsBtn.addEventListener('click', resetRewards); // NOUVEAU : Événement pour réinitialiser les récompenses
 
     // NOUVEAU : Événements pour les boutons supplémentaires
     superSpeedBtn.addEventListener('click', toggleSuperSpeedMode);
