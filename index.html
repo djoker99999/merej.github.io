@@ -1571,7 +1571,17 @@
       recentGains.forEach((gain, index) => {
         const gainNumber = gainsHistory.length - index;
         const dateDisplay = gain.date ? gain.date.split(' ')[0] : '-';
-        const gainType = gain.type === 'drop' ? 'DROP' : gain.symbole || '-';
+        
+        // CORRECTION : Afficher le bon nombre de symboles dans l'historique
+        let gainType;
+        if (gain.type === 'drop') {
+          gainType = 'DROP';
+        } else if (gain.symbolCount) {
+          gainType = `${gain.symbolCount} ${gain.symbole}`;
+        } else {
+          gainType = gain.symbole || '-';
+        }
+        
         const gainAmount = gain.type === 'drop' 
           ? `<span class="drop-amount">${gain.amount} pièces</span>` 
           : `<span class="gain-amount">${gain.roses} 🌹</span>`;
@@ -1691,7 +1701,7 @@
       };
     }
 
-    // Mettre en évidence les symboles identiques - MODIFIÉ POUR TOUTES LES COMBINAISONS DE 3+
+    // CORRECTION : Mettre en évidence les symboles identiques avec les bonnes valeurs
     function highlightMatchingSymbols() {
       const symbolGroups = {};
       
@@ -1709,9 +1719,9 @@
         symbol.classList.remove('partial-win');
       });
       
-      // Appliquer la classe partial-win à TOUS les groupes de 3 symboles ou plus
+      // Appliquer la classe partial-win à TOUS les groupes de 4 symboles ou plus
       Object.values(symbolGroups).forEach(positions => {
-        if (positions.length >= 3) {
+        if (positions.length >= 4) {
           positions.forEach(position => {
             const symbolElement = document.getElementById(`symbol${position + 1}`);
             if (symbolElement) {
@@ -2058,13 +2068,34 @@
           await winGame();
           break;
         } else {
-          // Vérifier s'il y a des symboles identiques (3, 4, 5 ou 6) - MODIFIÉ
+          // Vérifier s'il y a des symboles identiques (4 ou 5) - CORRECTION
           const matchingInfo = countMatchingSymbols();
-          if (matchingInfo.count >= 3 && !dropWon) {
-            // Mettre en évidence TOUS les groupes de 3 symboles ou plus
-            highlightMatchingSymbols();
+          if (matchingInfo.count >= 4 && !dropWon) {
+            // CORRECTION : Utiliser le bon nombre de symboles dans le message
             message.textContent = `🎉 ${matchingInfo.count} symboles ${matchingInfo.symbol} identiques ! 🎉`;
             playSymbolSound();
+            
+            // Mettre en évidence les symboles correspondants
+            highlightMatchingSymbols();
+            
+            // CORRECTION : Ajouter à l'historique des gains pour les combinaisons partielles
+            if (matchingInfo.count >= 4) {
+              const partialGainAmount = calculatePartialGain(matchingInfo.count);
+              gainsHistory.push({
+                type: 'partial',
+                tours: currentGameAttempts,
+                symbole: matchingInfo.symbol,
+                symbolCount: matchingInfo.count,
+                roses: partialGainAmount,
+                date: new Date().toLocaleString('fr-FR')
+              });
+              
+              rosesCount += partialGainAmount;
+              jackpotAmount += partialGainAmount;
+              updateStats();
+              updateJackpotDisplay();
+              updateGainsTable();
+            }
             
             // Attendre un peu pour que le joueur puisse voir les symboles dorés
             let delay;
@@ -2095,7 +2126,8 @@
         const matchingInfo = countMatchingSymbols();
         const maxCount = matchingInfo.count;
         
-        if (maxCount >= 3) {
+        if (maxCount >= 4) {
+          // CORRECTION : Utiliser le bon nombre de symboles dans le message
           message.textContent = `Maximum ${maxCount} symboles ${matchingInfo.symbol} identiques - Jackpot: ${jackpotAmount} roses`;
         } else {
           message.textContent = `Maximum ${maxCount} symboles identiques - Jackpot: ${jackpotAmount} roses`;
@@ -2104,6 +2136,15 @@
       
       isSpinning = false;
       spinBtn.disabled = false;
+    }
+
+    // CORRECTION : Calculer le gain partiel pour 4 ou 5 symboles
+    function calculatePartialGain(symbolCount) {
+      switch(symbolCount) {
+        case 4: return 100; // 100 roses pour 4 symboles
+        case 5: return 500; // 500 roses pour 5 symboles
+        default: return 0;
+      }
     }
 
     // Gestion de la victoire
@@ -2117,6 +2158,7 @@
         type: 'jackpot',
         tours: currentGameAttempts,
         symbole: winningSymbol.name,
+        symbolCount: currentDifficulty,
         roses: jackpotAmount,
         date: new Date().toLocaleString('fr-FR')
       });
