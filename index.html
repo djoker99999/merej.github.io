@@ -976,6 +976,102 @@
       animation: pulseSpeed 1s infinite;
     }
 
+    /* Popup pour 4 ou 5 symboles */
+    .partial-win-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.85);
+      animation: partialWinFadeIn 0.5s ease;
+    }
+
+    @keyframes partialWinFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .partial-win-content {
+      background: linear-gradient(135deg, #f39c12, #e67e22, #f39c12);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 500px;
+      animation: partialWinScaleIn 0.6s ease;
+      border: 4px solid #feca57;
+      box-shadow: 0 0 40px rgba(243, 156, 18, 0.8);
+      position: relative;
+      overflow: hidden;
+      z-index: 10000;
+    }
+
+    @keyframes partialWinScaleIn {
+      from { 
+        transform: scale(0.2) rotate(-5deg);
+        opacity: 0;
+      }
+      to { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    .partial-win-icon {
+      font-size: 6em;
+      margin-bottom: 15px;
+      animation: partialWinBounce 0.8s infinite;
+      filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+    }
+
+    @keyframes partialWinBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.1); }
+    }
+
+    .partial-win-title {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      color: white;
+      text-shadow: 0 0 15px rgba(0,0,0,0.8);
+      background: linear-gradient(45deg, #f39c12, #e67e22);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .partial-win-description {
+      font-size: 1.3em;
+      margin-bottom: 20px;
+      color: white;
+      font-weight: bold;
+      text-shadow: 0 0 8px rgba(0,0,0,0.5);
+    }
+
+    .partial-win-close {
+      padding: 12px 25px;
+      background: linear-gradient(45deg, #f39c12, #e67e22);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      z-index: 10001;
+    }
+
+    .partial-win-close:hover {
+      background: linear-gradient(45deg, #e67e22, #f39c12);
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+
     @media (max-width: 768px) {
       .game-container {
         padding: 20px;
@@ -1577,7 +1673,7 @@
         if (gain.type === 'drop') {
           gainType = 'DROP';
         } else if (gain.symbolCount) {
-          gainType = `${gain.symbolCount} ${gain.symbole}`;
+          gainType = `${gain.symbolCount} symboles identiques`;
         } else {
           gainType = gain.symbole || '-';
         }
@@ -1817,6 +1913,46 @@
       setTimeout(() => {
         if (document.body.contains(dropAnimation)) {
           document.body.removeChild(dropAnimation);
+        }
+      }, 5000);
+    }
+
+    // NOUVEAU : Afficher le popup pour 4 ou 5 symboles
+    function showPartialWinPopup(symbolCount, rosesWon) {
+      const partialWinPopup = document.createElement('div');
+      partialWinPopup.className = 'partial-win-popup';
+      
+      let title, description;
+      
+      if (symbolCount === 4) {
+        title = "4 SYMBOLES IDENTIQUES !";
+        description = `Vous avez aligné 4 symboles identiques et gagné ${rosesWon} roses !`;
+      } else {
+        title = "5 SYMBOLES IDENTIQUES !";
+        description = `Vous avez aligné 5 symboles identiques et gagné ${rosesWon} roses !`;
+      }
+      
+      partialWinPopup.innerHTML = `
+        <div class="partial-win-content">
+          <div class="partial-win-icon">
+            <img src="https://i.ibb.co/WNXDxn2y/IMG-7354-Photoroom.png" alt="Roses" style="width: 80px; height: 80px;">
+          </div>
+          <div class="partial-win-title">${title}</div>
+          <div class="partial-win-description">${description}</div>
+          <button class="partial-win-close">CONTINUER</button>
+        </div>
+      `;
+      
+      document.body.appendChild(partialWinPopup);
+      
+      const closeButton = partialWinPopup.querySelector('.partial-win-close');
+      closeButton.addEventListener('click', () => {
+        document.body.removeChild(partialWinPopup);
+      });
+      
+      setTimeout(() => {
+        if (document.body.contains(partialWinPopup)) {
+          document.body.removeChild(partialWinPopup);
         }
       }, 5000);
     }
@@ -2072,7 +2208,7 @@
           const matchingInfo = countMatchingSymbols();
           if (matchingInfo.count >= 4 && !dropWon) {
             // CORRECTION : Utiliser le bon nombre de symboles dans le message
-            message.textContent = `🎉 ${matchingInfo.count} symboles ${matchingInfo.symbol} identiques ! 🎉`;
+            message.textContent = `🎉 ${matchingInfo.count} symboles identiques ! 🎉`;
             playSymbolSound();
             
             // Mettre en évidence les symboles correspondants
@@ -2081,17 +2217,23 @@
             // CORRECTION : Ajouter à l'historique des gains pour les combinaisons partielles
             if (matchingInfo.count >= 4) {
               const partialGainAmount = calculatePartialGain(matchingInfo.count);
+              
+              // Ajouter les roses au total et au jackpot
+              rosesCount += partialGainAmount;
+              jackpotAmount += partialGainAmount;
+              
+              // Ajouter à l'historique des gains
               gainsHistory.push({
                 type: 'partial',
                 tours: currentGameAttempts,
-                symbole: matchingInfo.symbol,
                 symbolCount: matchingInfo.count,
                 roses: partialGainAmount,
                 date: new Date().toLocaleString('fr-FR')
               });
               
-              rosesCount += partialGainAmount;
-              jackpotAmount += partialGainAmount;
+              // Afficher le popup pour 4 ou 5 symboles
+              showPartialWinPopup(matchingInfo.count, partialGainAmount);
+              
               updateStats();
               updateJackpotDisplay();
               updateGainsTable();
@@ -2128,7 +2270,7 @@
         
         if (maxCount >= 4) {
           // CORRECTION : Utiliser le bon nombre de symboles dans le message
-          message.textContent = `Maximum ${maxCount} symboles ${matchingInfo.symbol} identiques - Jackpot: ${jackpotAmount} roses`;
+          message.textContent = `Maximum ${maxCount} symboles identiques - Jackpot: ${jackpotAmount} roses`;
         } else {
           message.textContent = `Maximum ${maxCount} symboles identiques - Jackpot: ${jackpotAmount} roses`;
         }
@@ -2142,7 +2284,7 @@
     function calculatePartialGain(symbolCount) {
       switch(symbolCount) {
         case 4: return 50; // 50 roses pour 4 symboles
-        case 5: return 500; // 500 roses pour 5 symboles
+        case 5: return 100; // 100 roses pour 5 symboles
         default: return 0;
       }
     }
@@ -2157,7 +2299,6 @@
       gainsHistory.push({
         type: 'jackpot',
         tours: currentGameAttempts,
-        symbole: winningSymbol.name,
         symbolCount: currentDifficulty,
         roses: jackpotAmount,
         date: new Date().toLocaleString('fr-FR')
