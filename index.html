@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🎰 Jackpot des Symboles Mystères</title>
   <style>
+    /* Styles CSS inchangés */
     * {
       margin: 0;
       padding: 0;
@@ -1257,7 +1258,7 @@
       </div>
       <div class="stat-item">
         <div>Prochain bonus</div>
-        <div class="stat-value" id="nextBonus">20</div>
+        <div class="stat-value" id="nextBonus">30</div>
       </div>
     </div>
 
@@ -1627,7 +1628,7 @@
       attemptsCount.textContent = attempts; // Compteur total
       currentGameAttemptsElement.textContent = currentGameAttempts; // Compteur de la partie
       rosesCountElement.textContent = rosesCount; // Roses totales
-      nextBonusElement.textContent = 20 - (bonusCounter % 20);
+      nextBonusElement.textContent = 30 - (bonusCounter % 30); // CORRECTION : 30 tours au lieu de 20
       
       // Sauvegarder après chaque mise à jour (sans notification)
       saveGame(false);
@@ -1860,12 +1861,12 @@
       });
     }
 
-    // Gérer le bonus de roses
+    // CORRECTION : Gérer le bonus de roses - UNIQUEMENT tous les 30 tours
     function handleRoseBonus() {
       bonusCounter++;
       
-      // Ajouter une rose seulement tous les 20 tours
-      if (bonusCounter % 20 === 0) {
+      // CORRECTION : Ajouter une rose seulement tous les 30 tours (au lieu de 20)
+      if (bonusCounter % 30 === 0) {
         rosesCount += 1;
         jackpotAmount += 1;
         message.textContent = `🌹 +1 rose ajoutée au jackpot !`;
@@ -2222,7 +2223,7 @@
         remainingTurns = attackMode - coup - 1;
         updateRemainingTurns();
         
-        // Gérer le bonus de roses
+        // CORRECTION : Gérer le bonus de roses (uniquement tous les 30 tours)
         handleRoseBonus();
         
         // NOUVEAU : Gérer le système de drop
